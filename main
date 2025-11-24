@@ -1,2 +1,23 @@
 from shapefile import*
+from fltk import*
 
+def open_file():
+    d=d
+
+def trie():
+    d=d
+
+def convertisseur ():
+    d=d
+
+
+def affichage_couleur():
+    d=d
+
+def WGS_Mercator ():
+    """convert WGS data to Mercator data"""
+    d=d
+
+def Mercator_WGS ():
+    """convert Mercator data to WGS data"""
+    d=d    
