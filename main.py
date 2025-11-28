@@ -1,15 +1,15 @@
 import shapefile
 from fltk import cree_fenetre, ferme_fenetre, attend_ev, polygone, mise_a_jour
 
-path = "departements-20180101-shp/departements-20180101.shp"
-sh_file = shapefile.Reader(path)
+def open_file():
+    path = "departements-20180101-shp/departements-20180101.shp"
+    sh_file = shapefile.Reader(path)
+    return sh_file
 
+sh_file = open_file()
 
 xmin, ymin, xmax, ymax = sh_file.bbox
-#print(xmin, ymin, xmax, ymax)
 all_shapes = sh_file.shapes()
-#print(sh_file.shape(3).points) - all points of third depart
-#print(sh_file.shape(3).parts)  - different parts of polygone
 
 class GeoScale:
     def __init__(self, xmin, ymin, xmax, ymax, largeur, hauteur, aspect=True, zoom = 1.0):
@@ -20,6 +20,7 @@ class GeoScale:
         self.largeur = largeur
         self.hauteur = hauteur
         self.aspect = aspect
+
 
         dx = xmax - xmin
         dy = ymax - ymin #Диапазон между макс и мин координатoi
@@ -38,12 +39,12 @@ class GeoScale:
         y = self.hauteur - ((lat - self.ymin) * self.scale + self.offset_y)
         return x, y
 
-largeur = 800
-hauteur = 800
-scale = GeoScale(xmin=xmin, ymin=ymin, xmax=xmax, ymax=ymax, largeur=largeur, hauteur=hauteur,
+
+scale = GeoScale(xmin=xmin, ymin=ymin, xmax=xmax, ymax=ymax, largeur=800, hauteur=800,
                  zoom = 7.5)
-cree_fenetre(largeur=largeur, hauteur=hauteur)
-#x, y = scale.from_geo_to_pix(lon, lat)
+
+cree_fenetre(scale.largeur, scale.hauteur)
+
 
 def draw_shape(shape):
 
