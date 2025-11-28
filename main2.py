@@ -1,11 +1,31 @@
 from shapefile import*
 from fltk import*
+import re
 
 def open_file():
-    d=d
+    tab=[]
+    with open("temperature-quotidienne-departementale.csv") as f:
+        read=f.read()
+        read=re.split(";|\n",read)
+        tab.append(read)
+    return tab
+            
 
 def trie():
-    d=d
+    paris=[]
+    tab=open_file()
+    for x in tab :
+        if tab[x]=="Paris":
+            paris.append(x[-2])
+            paris.append(x[-1])
+            paris.append(x)
+            paris.append(x[1])
+            paris.append(x[2])
+            paris.append(x[3])
+        else : 
+            continue
+    return paris
+    
 
 def convertisseur ():
     d=d
@@ -21,3 +41,5 @@ def WGS_Mercator ():
 def Mercator_WGS ():
     """convert Mercator data to WGS data"""
     d=d    
+
+print(trie())
