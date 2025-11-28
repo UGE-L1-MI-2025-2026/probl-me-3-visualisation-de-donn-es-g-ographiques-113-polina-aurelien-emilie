@@ -11,7 +11,7 @@ def convertisseur ():
     d=d
 
 
-def affichage_couleur():
+def afficher_restaurant():
     d=d
 
 def WGS_Mercator ():
