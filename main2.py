@@ -3,29 +3,32 @@ from fltk import*
 import re
 
 def open_file():
-    tab=[]
+    lignes = []
     with open("temperature-quotidienne-departementale.csv") as f:
-        read=f.read()
-        read=re.split(";|\n",read)
-        tab.append(read)
-    return tab
-            
+        for ligne in f:
+            ligne = ligne.strip()          # retire \n
+            if ligne == "":
+                continue
+            colonnes = ligne.split(";")    # transforme la ligne en tableau
+            lignes.append(colonnes)        # ajoute le tableau de colonnes
+    return lignes
+
 
 def trie():
-    paris=[]
-    tab=open_file()
-    for x in tab :
-        if tab[x]=="Paris":
-            paris.append(x[-2])
-            paris.append(x[-1])
-            paris.append(x)
-            paris.append(x[1])
-            paris.append(x[2])
-            paris.append(x[3])
-        else : 
+    resultat = []
+    tab = open_file()
+
+    for colonnes in tab:
+        # colonnes = [date, code_dept, nom_dept, tmin, tmax, tavg]
+        if len(colonnes) < 3:
             continue
-    return paris
-    
+
+        # filtre : département = Paris
+        if colonnes[2] == "Paris":
+            resultat.append(colonnes)  # ajoute le sous-tableau entier
+
+    return resultat
+
 
 def convertisseur ():
     d=d
