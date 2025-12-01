@@ -32,15 +32,18 @@ class GeoScale:
         map_larg = dx * self.scale
         map_haut = dy * self.scale
         self.offset_x = (largeur - map_larg) / 1.8
-        self.offset_y = (hauteur - map_haut) - 250  #tabs for having a map in the middle
+        self.offset_y = (hauteur - map_haut)   #tabs for having a map in the middle
 
     def from_geo_to_pix(self, lon, lat):
-        x = (lon - self.xmin) * self.scale + self.offset_x
-        y = self.scale * math.log(math.tan(math.pi / 4 + lat / 2))
+        lon_rad = math.radians(lon)
+        lat_rad = math.radians(lat)
+
+        x = (lon_rad - self.xmin) * self.scale + self.offset_x + 8400
+        y = (self.scale * math.log(math.tan(math.pi / 4 + lat_rad / 2)) - 1800)
         return x, y
 
 scale = GeoScale(xmin=xmin, ymin=ymin, xmax=xmax, ymax=ymax, largeur=800, hauteur=800,
-                 zoom = 7.5)
+                 zoom = 355)
 
 cree_fenetre(scale.largeur, scale.hauteur)
 
