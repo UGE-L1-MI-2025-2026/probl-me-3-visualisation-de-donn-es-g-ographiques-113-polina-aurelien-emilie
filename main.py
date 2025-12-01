@@ -1,12 +1,12 @@
 import shapefile
 from fltk import cree_fenetre, ferme_fenetre, attend_ev, polygone, mise_a_jour
-
-def open_file():
+import math
+def open_shapefile():
     path = "departements-20180101-shp/departements-20180101.shp"
     sh_file = shapefile.Reader(path)
     return sh_file
 
-sh_file = open_file()
+sh_file = open_shapefile()
 
 xmin, ymin, xmax, ymax = sh_file.bbox
 all_shapes = sh_file.shapes()
@@ -36,9 +36,8 @@ class GeoScale:
 
     def from_geo_to_pix(self, lon, lat):
         x = (lon - self.xmin) * self.scale + self.offset_x
-        y = self.hauteur - ((lat - self.ymin) * self.scale + self.offset_y)
+        y = self.scale * math.log(math.tan(math.pi / 4 + lat / 2))
         return x, y
-
 
 scale = GeoScale(xmin=xmin, ymin=ymin, xmax=xmax, ymax=ymax, largeur=800, hauteur=800,
                  zoom = 7.5)
