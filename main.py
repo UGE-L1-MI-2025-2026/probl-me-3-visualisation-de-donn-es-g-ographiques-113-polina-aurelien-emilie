@@ -12,7 +12,7 @@ xmin, ymin, xmax, ymax = sh_file.bbox
 all_shapes = sh_file.shapes()
 
 class GeoScale:
-    def __init__(self, xmin, ymin, xmax, ymax, largeur, hauteur, aspect=True, zoom = 1.0):
+    def __init__(self, xmin, ymin, xmax, ymax, largeur, hauteur, aspect=True):
         self.xmin = xmin
         self.ymin = ymin
         self.xmax = xmax
@@ -25,25 +25,28 @@ class GeoScale:
         dx = xmax - xmin
         dy = ymax - ymin #Диапазон между макс и мин координатoi
 
-        sx = largeur / dx
-        sy = hauteur / dy #Коэффицент масштабирования, чтобы карта не расплющивалась
-        self.scale = min(sx, sy)*zoom
+        sx = self.hauteur / dx
+        sy = self.largeur / dy #Коэффицент масштабирования, чтобы карта не расплющивалась
+        self.scale = min(sx, sy)
+        print(self.scale)
 
         map_larg = dx * self.scale
         map_haut = dy * self.scale
-        self.offset_x = (largeur - map_larg) / 1.8
+        self.offset_x = (largeur - map_larg) / 2
+        print(self.offset_x)
         self.offset_y = (hauteur - map_haut)   #tabs for having a map in the middle
 
     def from_geo_to_pix(self, lon, lat):
         lon_rad = math.radians(lon)
         lat_rad = math.radians(lat)
 
-        x = (lon_rad - self.xmin) * self.scale + self.offset_x + 8400
-        y = (self.scale * math.log(math.tan(math.pi / 4 + lat_rad / 2)) - 1800)
+        x = (lon_rad - self.xmin) + self.offset_x
+        x*= self.scale 
+        y =  math.log(math.tan(math.pi / 4 + lat_rad / 2))+self.offset_y
+        y *= self.scale
         return x, y
 
-scale = GeoScale(xmin=xmin, ymin=ymin, xmax=xmax, ymax=ymax, largeur=800, hauteur=800,
-                 zoom = 355)
+scale = GeoScale(xmin=xmin, ymin=ymin, xmax=xmax, ymax=ymax, largeur=800, hauteur=800)
 
 cree_fenetre(scale.largeur, scale.hauteur)
 
@@ -69,3 +72,4 @@ for shape in all_shapes:
 mise_a_jour()
 attend_ev()
 ferme_fenetre()
+
