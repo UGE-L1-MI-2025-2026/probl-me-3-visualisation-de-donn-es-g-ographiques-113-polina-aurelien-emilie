@@ -46,6 +46,14 @@ class GeoScale:
         y *= self.scale
         return x, y
 
+    ''' 
+    # ça marche mais c'est un peu brouillon ?
+    def from_geo_to_pix(self, lon, lat):
+        # lat_rad = math.radians(lat)
+        x = (lon - self.xmin) * self.scale + self.offset_x
+        y = (self.ymax - math.degrees(math.log(math.tan(math.pi / 4 + math.radians(lat) / 2)))) * self.scale + self.offset_y
+        return x, y  
+    '''
 scale = GeoScale(xmin=xmin, ymin=ymin, xmax=xmax, ymax=ymax, largeur=800, hauteur=800)
 
 cree_fenetre(scale.largeur, scale.hauteur)
@@ -68,6 +76,34 @@ def draw_shape(shape):
 
 for shape in all_shapes:
     draw_shape(shape)
+
+
+'''
+# Permet de se déplacer sur la carte avec les touches directionnelles
+def se_deplacer(speed=10):
+    dx = dy = 0
+    if touche_pressee("Left"):
+        dx += speed
+    if touche_pressee("Right"):
+        dx -= speed
+    if touche_pressee("Up"):
+        dy += speed
+    if touche_pressee("Down"):
+        dy -= speed
+    if dx != 0 or dy != 0:
+        deplace("all", dx, dy)
+        
+while True:
+    se_deplacer()
+    mise_a_jour()
+    
+    ev = donne_ev()
+    if type_ev(ev) == 'Quitte':
+            break
+
+ferme_fenetre()
+
+'''
 
 mise_a_jour()
 attend_ev()
