@@ -1,11 +1,39 @@
 import shapefile
-from fltk import cree_fenetre, ferme_fenetre, attend_ev, polygone, mise_a_jour
+from fltk import *
 import math
 def open_shapefile():
     path = "departements-20180101-shp/departements-20180101.shp"
     sh_file = shapefile.Reader(path)
     return sh_file
 
+def open_file():
+    lignes = []
+
+    with open("temperature-quotidienne-departementale.csv") as f:
+        for ligne in f:
+            ligne = ligne.strip()          # retire \n
+            if ligne == "":
+                continue
+            colonnes = ligne.split(";")    # transforme la ligne en tableau
+            lignes.append(colonnes)        # ajoute le tableau de colonnes
+    return lignes
+
+
+
+def trie():
+    resultat = []
+    tab = open_file()
+
+    for colonnes in tab:
+        if colonnes[0]!="2024-05-13":
+            continue
+
+        else:
+            resultat.append(colonnes)  # ajoute le sous-tableau entier
+
+    return resultat
+
+print(trie())
 sh_file = open_shapefile()
 
 xmin, ymin, xmax, ymax = sh_file.bbox
@@ -36,24 +64,14 @@ class GeoScale:
         print(self.offset_x)
         self.offset_y = (hauteur - map_haut)   #tabs for having a map in the middle
 
-    def from_geo_to_pix(self, lon, lat):
-        lon_rad = math.radians(lon)
-        lat_rad = math.radians(lat)
 
-        x = (lon_rad - self.xmin) + self.offset_x
-        x*= self.scale 
-        y =  math.log(math.tan(math.pi / 4 + lat_rad / 2))+self.offset_y
-        y *= self.scale
-        return x, y
-
-    ''' 
     # ça marche mais c'est un peu brouillon ?
     def from_geo_to_pix(self, lon, lat):
         # lat_rad = math.radians(lat)
         x = (lon - self.xmin) * self.scale + self.offset_x
         y = (self.ymax - math.degrees(math.log(math.tan(math.pi / 4 + math.radians(lat) / 2)))) * self.scale + self.offset_y
         return x, y  
-    '''
+
 scale = GeoScale(xmin=xmin, ymin=ymin, xmax=xmax, ymax=ymax, largeur=800, hauteur=800)
 
 cree_fenetre(scale.largeur, scale.hauteur)
@@ -78,7 +96,7 @@ for shape in all_shapes:
     draw_shape(shape)
 
 
-'''
+
 # Permet de se déplacer sur la carte avec les touches directionnelles
 def se_deplacer(speed=10):
     dx = dy = 0
@@ -102,10 +120,3 @@ while True:
             break
 
 ferme_fenetre()
-
-'''
-
-mise_a_jour()
-attend_ev()
-ferme_fenetre()
-
