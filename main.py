@@ -1,5 +1,5 @@
 import shapefile
-from fltk import cree_fenetre, ferme_fenetre, attend_ev, polygone, mise_a_jour
+from fltk import *
 import math
 def open_shapefile():
     path = "departements-20180101-shp/departements-20180101.shp"
@@ -29,13 +29,19 @@ class GeoScale:
         sy = self.largeur / dy #Коэффицент масштабирования, чтобы карта не расплющивалась
         self.scale = min(sx, sy)
         print(self.scale)
+        
+        # zoom "de base"
+        self.zoom = 1.0
 
         map_larg = dx * self.scale
         map_haut = dy * self.scale
+        print(map_larg, map_haut)
+    
         self.offset_x = (largeur - map_larg) / 2
-        print(self.offset_x)
         self.offset_y = (hauteur - map_haut)   #tabs for having a map in the middle
-
+        print(self.offset_x, self.offset_y)
+        
+    '''
     def from_geo_to_pix(self, lon, lat):
         lon_rad = math.radians(lon)
         lat_rad = math.radians(lat)
@@ -50,10 +56,13 @@ class GeoScale:
     # ça marche mais c'est un peu brouillon ?
     def from_geo_to_pix(self, lon, lat):
         # lat_rad = math.radians(lat)
-        x = (lon - self.xmin) * self.scale + self.offset_x
-        y = (self.ymax - math.degrees(math.log(math.tan(math.pi / 4 + math.radians(lat) / 2)))) * self.scale + self.offset_y
+        x = (lon - self.xmin) * (self.scale * self.zoom) + self.offset_x
+        y = (self.ymax - math.degrees(math.log(math.tan(math.pi / 4 + math.radians(lat) / 2)))) * (self.scale * self.zoom) + self.offset_y
         return x, y  
-    '''
+    
+    def zoomer(self, facteur):
+        self.zoom *= facteur
+    
 scale = GeoScale(xmin=xmin, ymin=ymin, xmax=xmax, ymax=ymax, largeur=800, hauteur=800)
 
 cree_fenetre(scale.largeur, scale.hauteur)
@@ -74,11 +83,12 @@ def draw_shape(shape):
         polygone(segment_pixels, couleur = "black")
 
 
-for shape in all_shapes:
-    draw_shape(shape)
+def dessine_carte():       
+    for shape in all_shapes:
+        draw_shape(shape)  
 
+dessine_carte()
 
-'''
 # Permet de se déplacer sur la carte avec les touches directionnelles
 def se_deplacer(speed=10):
     dx = dy = 0
@@ -92,20 +102,31 @@ def se_deplacer(speed=10):
         dy -= speed
     if dx != 0 or dy != 0:
         deplace("all", dx, dy)
+       
+ 
         
+# Permet de zoomer ou dézoomer la carte
+ZOOM = 1.1
+DZOOM = 1/1.1
+    
 while True:
     se_deplacer()
     mise_a_jour()
     
+    if touche_pressee("z"):
+        scale.zoomer(ZOOM)
+        efface_tout()
+        dessine_carte()
+        
+    if touche_pressee("d"):
+        scale.zoomer(DZOOM) 
+        efface_tout()
+        dessine_carte()
+    
     ev = donne_ev()
     if type_ev(ev) == 'Quitte':
-            break
+        break
+        
 
-ferme_fenetre()
-
-'''
-
-mise_a_jour()
-attend_ev()
 ferme_fenetre()
 
