@@ -2,6 +2,7 @@ import shapefile
 from fltk import *
 import math
 import main2
+
 def open_shapefile():
     path = "departements-20180101-shp/departements-20180101.shp"
     sh_file = shapefile.Reader(path)
@@ -22,12 +23,12 @@ def trie_sh():
             continue
         resultat.append(shp)
 
-    return resultat
+    return resultat, records
 
 
 
 xmin, ymin, xmax, ymax = sh_file.bbox
-all_shapes = trie_sh()
+all_shapes, records = trie_sh()
 
 class GeoScale:
     def __init__(self, xmin, ymin, xmax, ymax, largeur, hauteur, aspect=True):
@@ -60,27 +61,78 @@ class GeoScale:
         y = (self.ymax - math.degrees(math.log(math.tan(math.pi / 4 + math.radians(lat) / 2)))) * self.scale + self.offset_y
         return x, y  
 
+def temp_par_departament():
+    data = main2.trie()  # liste de liste
+    temp_departament = {}
+    for i in range(1, len(data)):
+        if data[i][5] == '' :
+            continue
+        else:
+            key = data[i][1]
+            temp = float(data[i][5])
+            temp_departament[key] = temp
+    return temp_departament
+
+def temp_to_color(temp, tmin, tmax):
+    if tmax == tmin:
+        norm = 0
+    else:
+        norm = (temp - tmin) / (tmax - tmin)
+    r = int(255 * norm)
+    g = 0
+    b = int(255 - (255 - 0) * norm)
+    return f'#{r:02x}{g:02x}{b:02x}'
+
+temp_departament = temp_par_departament()
+tmin = min(temp_departament.values())
+tmax = max(temp_departament.values())
 scale = GeoScale(xmin=xmin, ymin=ymin, xmax=xmax, ymax=ymax, largeur=800, hauteur=800)
-
 cree_fenetre(scale.largeur, scale.hauteur)
+x, y = 770, 0
+temperature = -30
 
 
-def draw_shape(shape):
+for i in range(-30, 40, 2):
+    color = temp_to_color(i, -30, 40)
+    if len(color) == 7:
+        final_color = color
+    #print(color, len(color))
+    rectangle(x,y, x + 30, y + 12, remplissage = final_color)
+    if int(i) % 10 == 0:
+        texte(x-30, y, f'{int(i)} -', couleur = 'black', taille = 10)
+
+    y += 12
+
+
+
+
+
+def draw_shape(shape, record):
+    depart_code = record[0]
+
+    if depart_code in temp_departament.keys():
+        temp = temp_departament[depart_code]
+        depart_color = temp_to_color(temp, tmin, tmax)
+        #print(depart_code, temp, depart_color)
+    else:
+        depart_color = None
     pnts = shape.points #tous les points de polygone
     prts = list(shape.parts) + [len(pnts)]  #toutes les parties de polygone, on ajoute len pour qu'on puisse
-                                            # obtenir le dernier point, pour qu'on puisse
-                                              # quand il faut finit de faire dernier polyg
+                                                # obtenir le dernier point, pour qu'on puisse savoir
+                                                  # quand il faut finit de faire dernier polyg
     for i in range(len(prts)-1):
+
         segment = pnts[prts[i]:prts[i+1]] #partage par des segments (on ecrit les points de ca ([0:150]))
         segment_pixels = []
         for lon, lat in segment:
             coords = scale.from_geo_to_pix(lon, lat)
             segment_pixels.append(coords)
-        polygone(segment_pixels, couleur = "black")
+        #print(depart_color)
+        polygone(segment_pixels, couleur = "black", remplissage = depart_color)
 
 
-for shape in all_shapes:
-    draw_shape(shape)
+for shape, record in zip(all_shapes, records):
+    draw_shape(shape, record)
 
 
 
