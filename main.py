@@ -22,12 +22,12 @@ def trie_sh():
             continue
         resultat.append(shp)
 
-    return resultat
+    return resultat,records
 
 
 
 xmin, ymin, xmax, ymax = sh_file.bbox
-all_shapes = trie_sh()
+all_shapes, records = trie_sh()
 
 class GeoScale:
     def __init__(self, xmin, ymin, xmax, ymax, largeur, hauteur, aspect=True):
