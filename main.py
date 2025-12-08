@@ -23,12 +23,8 @@ def trie_sh():
             continue
         resultat.append(shp)
 
-<<<<<<< HEAD
-    return resultat,records
-=======
-    return resultat, records
->>>>>>> e8615cfb60724dc5735fbd3304a2a8ce5a4a693e
 
+    return resultat,records
 
 
 xmin, ymin, xmax, ymax = sh_file.bbox
