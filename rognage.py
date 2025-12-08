@@ -21,13 +21,26 @@ def trie_sh():
 
         if code_dep in ['971', '972', '973', '974', '976']:  
             continue
+        print(rec)
         resultat.append(shp)
-
+    
     return resultat
 
-
-
-xmin, ymin, xmax, ymax = sh_file.bbox
+liste_departement=trie_sh()
+tab_xmin=[]
+tab_xmax=[]
+tab_ymin=[]
+tab_ymax=[]
+for departements in liste_departement:
+    xmin, ymin, xmax, ymax = departements.bbox
+    tab_xmin.append(xmin)
+    tab_xmin.append(xmax)
+    tab_xmin.append(ymin)
+    tab_xmin.append(ymax)
+xmin=min(tab_xmin)
+xmax=max(tab_xmax)
+ymin=min(tab_ymin)
+ymax=max(tab_ymax)
 all_shapes = trie_sh()
 
 class GeoScale:
