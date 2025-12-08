@@ -1,7 +1,8 @@
 import shapefile
 from fltk import *
 import math
-import main2
+
+
 def open_shapefile():
     path = "departements-20180101-shp/departements-20180101.shp"
     sh_file = shapefile.Reader(path)
@@ -55,10 +56,10 @@ class GeoScale:
 
     # ça marche mais c'est un peu brouillon ?
     def from_geo_to_pix(self, lon, lat):
-        x=(lon - self.xmin) * self.scale + self.offset_x
-        y = (self.ymax - lat) * self.scale + self.offset_y
-        return x, y
-
+        # lat_rad = math.radians(lat)
+        x = (lon - self.xmin) * self.scale + self.offset_x
+        y = (self.ymax - math.degrees(math.log(math.tan(math.pi / 4 + math.radians(lat) / 2)))) * self.scale + self.offset_y
+        return x, y  
 
 scale = GeoScale(xmin=xmin, ymin=ymin, xmax=xmax, ymax=ymax, largeur=800, hauteur=800)
 
@@ -82,6 +83,11 @@ def draw_shape(shape):
 
 for shape in all_shapes:
     draw_shape(shape)
+
+
+
+def boutons ():
+    ligne(0)
 
 
 
