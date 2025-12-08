@@ -2,8 +2,10 @@ from shapefile import*
 from fltk import*
 import re
 
+
 def open_file():
     lignes = []
+
     with open("temperature-quotidienne-departementale.csv") as f:
         for ligne in f:
             ligne = ligne.strip()          # retire \n
@@ -14,21 +16,19 @@ def open_file():
     return lignes
 
 
+
 def trie():
     resultat = []
     tab = open_file()
 
     for colonnes in tab:
-        # colonnes = [date, code_dept, nom_dept, tmin, tmax, tavg]
-        if len(colonnes) < 3:
+        if colonnes[0]!="2024-05-13":
             continue
 
-        # filtre : département = Paris
-        if colonnes[2] == "Paris":
+        else:
             resultat.append(colonnes)  # ajoute le sous-tableau entier
 
     return resultat
-
 
 def convertisseur ():
     d=d
@@ -45,4 +45,3 @@ def Mercator_WGS ():
     """convert Mercator data to WGS data"""
     d=d    
 
-print(trie())
