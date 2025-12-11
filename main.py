@@ -28,39 +28,74 @@ def trie_sh():
 
     return resultat_shapes, resultat_records
 
-xmin, ymin, xmax, ymax = sh_file.bbox
-all_shapes, records = trie_sh()
+
+def mercator_y(lat):
+    lat_rad = math.radians(lat)
+    return math.degrees(math.log(math.tan(math.pi/4 + lat_rad/2)))
+
+def mercator_x(lon):
+    return lon  
+
+
+
 
 class GeoScale:
-    def __init__(self, xmin, ymin, xmax, ymax, largeur, hauteur, aspect=True):
-        self.xmin = xmin
-        self.ymin = ymin
-        self.xmax = xmax
-        self.ymax = ymax
+    def __init__(self, xmin, ymin, xmax, ymax, largeur, hauteur):
+
         self.largeur = largeur
         self.hauteur = hauteur
-        self.aspect = aspect
 
+        self.Xmin = xmin
+        self.Xmax = xmax
+        self.Ymin = ymin     # déjà en Mercator !
+        self.Ymax = ymax     # déjà en Mercator !
 
-        dx = xmax - xmin
-        dy = ymax - ymin #Диапазон между макс и мин координатoi
+        dx = self.Xmax - self.Xmin
+        dy = self.Ymax - self.Ymin
 
-        sx = self.largeur / dx
-        sy = self.hauteur / dy
-        self.scale = min(sx, sy)
+        self.scale = min(largeur / dx, hauteur / dy)
 
         map_larg = dx * self.scale
         map_haut = dy * self.scale
+
         self.offset_x = (largeur - map_larg) / 2
-        self.offset_y = (hauteur - map_haut)   #tabs for having a map in the middle
+        self.offset_y = (hauteur - map_haut) / 2
 
 
-    # ça marche mais c'est un peu brouillon ?
     def from_geo_to_pix(self, lon, lat):
-        # lat_rad = math.radians(lat)
-        x = (lon - self.xmin) * self.scale + self.offset_x
-        y = (self.ymax - math.degrees(math.log(math.tan(math.pi / 4 + math.radians(lat) / 2)))) * self.scale + self.offset_y
-        return x, y  
+        X = lon
+        Y = mercator_y(lat)
+
+        x = (X - self.Xmin) * self.scale + self.offset_x
+        y = (self.Ymax - Y) * self.scale + self.offset_y
+
+        return x, y
+
+
+all_shapes, records = trie_sh()
+
+min_lon = float('+inf')
+max_lon = float('-inf')
+min_lat = float('+inf')
+max_lat = float('-inf')
+
+for shape in all_shapes:
+    for lon, lat in shape.points:
+        if lon < min_lon: min_lon = lon
+        if lon > max_lon: max_lon = lon
+        if lat < min_lat: min_lat = lat
+        if lat > max_lat: max_lat = lat
+
+Ymin_merc = mercator_y(min_lat)
+Ymax_merc = mercator_y(max_lat)
+
+Xmin = min_lon
+Xmax = max_lon
+
+
+scale = GeoScale(Xmin, Ymin_merc, Xmax, Ymax_merc, 800, 800)
+
+
 
 def temp_par_departament():
     data = main2.trie()  # liste de liste
@@ -87,7 +122,7 @@ def temp_to_color(temp, tmin, tmax):
 temp_departament = temp_par_departament()
 tmin = min(temp_departament.values())
 tmax = max(temp_departament.values())
-scale = GeoScale(xmin=xmin, ymin=ymin, xmax=xmax, ymax=ymax, largeur=800, hauteur=800)
+scale = GeoScale(Xmin, Ymin_merc, Xmax, Ymax_merc, 800, 800)
 cree_fenetre(scale.largeur, scale.hauteur)
 x, y = 770, 0
 temperature = -30
