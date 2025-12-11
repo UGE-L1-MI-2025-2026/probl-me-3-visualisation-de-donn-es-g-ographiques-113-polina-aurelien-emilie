@@ -59,7 +59,6 @@ class GeoScale:
 
     # ça marche mais c'est un peu brouillon ?
     def from_geo_to_pix(self, lon, lat):
-        # lat_rad = math.radians(lat)
         x = (lon - self.xmin) * self.scale + self.offset_x
         y = (self.ymax - math.degrees(
             math.log(math.tan(math.pi / 4 + math.radians(lat) / 2)))) * self.scale + self.offset_y
@@ -103,9 +102,9 @@ for i in range(-30, 40, 2):
     if len(color) == 7:
         final_color = color
     # print(color, len(color))
-    rectangle(x, y, x + 30, y + 12, remplissage=final_color)
+    rectangle(x, y, x + 30, y + 12, remplissage=final_color, tag = "gradient")
     if int(i) % 10 == 0:
-        texte(x - 30, y, f'{int(i)} -', couleur='black', taille=10)
+        texte(x - 30, y, f'{int(i)} -', couleur='black', taille=10, tag = "temp_valeur")
 
     y += 12
 
@@ -140,6 +139,72 @@ def draw_shape(shape, record, numero_depart):
     ymax_pix = max([p[1] for p in polygone_pixels])
     scale.database[numero_depart] = (xmin_pix, ymin_pix, xmax_pix,  ymax_pix)
 
+def draw_clicked_polygone(clicked_polygone: int):
+    # clicked_polygone - indice de polygone (0, 1, 2, ...)
+    shape = all_shapes[clicked_polygone]
+    record = records[clicked_polygone]
+    depart_code = record[0]
+
+
+    if depart_code in temp_departament:
+        temp = temp_departament[depart_code]
+        depart_color = temp_to_color(temp, tmin, tmax)
+    else:
+        depart_color = None
+
+    pnts = shape.points
+    prts = list(shape.parts) + [len(pnts)]
+
+
+    xmin, ymin, xmax, ymax = shape.bbox
+    dx = xmax - xmin
+    dy = ymax - ymin
+
+
+    preview_w = 100
+    preview_h = 100
+    margin = 30
+    offset_x = scale.largeur - preview_w - margin
+    offset_y = scale.hauteur - preview_h - margin
+
+    sx = preview_w / dx
+    sy = preview_h / dy
+    s = min(sx, sy)
+
+    draw_w = dx * s
+    draw_h = dy * s
+
+    center_x = offset_x + (preview_w - draw_w) / 2
+    center_y = offset_y + (preview_h - draw_h) / 2
+
+
+    for i in range(len(prts) - 1):
+        segment = pnts[prts[i]:prts[i + 1]]
+        segment_pixels = []
+        for lon, lat in segment:
+            x = (lon - xmin) * s + center_x
+            # y инвертируем, чтобы север был сверху
+            y = (ymax - lat) * s + center_y
+            segment_pixels.append((x, y))
+        polygone(segment_pixels, couleur="black", remplissage=depart_color, tag="polygone")
+
+
+    texte(450, 700, f'departament: {record[3]}', taille=12, tag="depart")
+
+
+    data = main2.trie()
+    data_need = None
+    for row in data:
+        if row[1] == depart_code:
+            data_need = row
+            break
+
+    if data_need:
+        texte(450, 730, f'temperature moyenne: {data_need[5]}', taille=12, tag="temperature")
+        texte(450, 760, f'date: {data_need[0]}', taille=12, tag="date")
+    else:
+        texte(450, 730, f'temperature moyenne: inconnue', taille=12, tag="temperature")
+        texte(450, 760, f'date: {data[0][0]}', taille=12, tag="date")
 
 
 
@@ -147,13 +212,15 @@ for numero_depart, (shape, record) in enumerate(zip(all_shapes, records)):
     draw_shape(shape, record, numero_depart)
 
 
-def boutons():
-    ligne(0)
 
 
-# Permet de se déplacer sur la carte avec les touches directionnelles
+current_dx = 0 #pour bouger la carte avec deplace()
+current_dy = 0
+
 def se_deplacer(speed=10):
-    dx = dy = 0
+    global current_dx, current_dy
+    dx = 0
+    dy = 0
     if touche_pressee("Left"):
         dx += speed
     if touche_pressee("Right"):
@@ -164,6 +231,14 @@ def se_deplacer(speed=10):
         dy -= speed
     if dx != 0 or dy != 0:
         deplace("all", dx, dy)
+        deplace("gradient", -dx, -dy)
+        deplace("temp_valeur", -dx, -dy)
+        deplace("polygone", -dx, -dy)
+        deplace("temperature", -dx, -dy)
+        deplace("date", -dx, -dy)
+        deplace("depart", -dx, -dy)
+        current_dx += dx
+        current_dy += dy
 
 
 while True:
@@ -173,16 +248,30 @@ while True:
     ev = donne_ev()
     if type_ev(ev) == 'Quitte':
         break
+
     if type_ev(ev) == "ClicGauche":
-        x = abscisse(ev)
-        y = ordonnee(ev)
-        """je suis en train d'essayer de faire un affichage de chaque polygone"""
+        # coordonnes de click en rendant comte carte bouge
+        x_screen = abscisse(ev)
+        y_screen = ordonnee(ev)
+
+        # les convert dans coord basic
+        x = x_screen - current_dx
+        y = y_screen - current_dy
+
+        clicked_polygone = None
+
         for numero_depart, (xmin_pix, ymin_pix, xmax_pix, ymax_pix) in scale.database.items():
             if xmin_pix <= x <= xmax_pix and ymin_pix <= y <= ymax_pix:
                 clicked_polygone = numero_depart
                 break
-        if clicked_polygone:
-            print(f'vous avez clique sur Polygone {clicked_polygone}')
 
+        if clicked_polygone is not None:
+            efface("polygone")
+            efface("temperature")
+            efface("depart")
+            efface("date")
+
+            print(f'vous avez clique sur Polygone {clicked_polygone}')
+            draw_clicked_polygone(clicked_polygone)
 
 ferme_fenetre()
