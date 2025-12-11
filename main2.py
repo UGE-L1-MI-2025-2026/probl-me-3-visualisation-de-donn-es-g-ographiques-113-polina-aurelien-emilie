@@ -18,30 +18,5 @@ def open_file():
 
 
 def trie():
-    resultat = []
-    tab = open_file()
-
-    for colonnes in tab:
-        if colonnes[0]!="2024-05-13":
-            continue
-
-        else:
-            resultat.append(colonnes)  # ajoute le sous-tableau entier
-
+    resultat = open_file()
     return resultat
-
-def convertisseur ():
-    d=d
-
-
-def afficher_restaurant():
-    d=d
-
-def WGS_Mercator ():
-    """convert WGS data to Mercator data"""
-    d=d
-
-def Mercator_WGS ():
-    """convert Mercator data to WGS data"""
-    d=d    
-
