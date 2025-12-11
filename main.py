@@ -12,20 +12,21 @@ def open_shapefile():
 sh_file = open_shapefile()
 
 def trie_sh():
-    resultat = []
+    resultat_shapes = []
+    resultat_records = []
+
+    DROM = {'971','972','973','974','976'}
     records = sh_file.records()
     shapes = sh_file.shapes()
 
     for rec, shp in zip(records, shapes):
         code_dep = rec[0]  
 
-        if code_dep in ['971', '972', '973', '974', '976']:  
-            continue
-        resultat.append(shp)
+        if code_dep not in DROM:  
+            resultat_shapes.append(shp)
+            resultat_records.append(rec)
 
-
-    return resultat,records
-
+    return resultat_shapes, resultat_records
 
 xmin, ymin, xmax, ymax = sh_file.bbox
 all_shapes, records = trie_sh()
