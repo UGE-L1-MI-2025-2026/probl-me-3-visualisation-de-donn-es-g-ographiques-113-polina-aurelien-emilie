@@ -53,6 +53,9 @@ class GeoScale:
         self.offset_x = (largeur - map_larg)/2
         self.offset_y = (hauteur - map_haut)/2
 
+        self.move_x = 0
+        self.move_y = 0
+        
     def from_geo_to_pix(self, lon, lat):
         X = lon
         Y = mercator_y(lat)
@@ -152,12 +155,15 @@ def dessiner_carte():
 
 def dessiner_legende():
     x, y = 770, 0
+    texte(x - 10, y + 420, "(en °C)", tag="boutons", taille = 10)
+    
     for i in range(-30, 40, 2):
         color = temp_to_color(i, -30, 40)
-        rectangle(x, y, x+30, y+12, remplissage=color, tag="boutons")
+        rectangle(x, y, x + 30, y + 12, remplissage=color, tag="boutons")
         if i % 10 == 0:
-            texte(x-35, y, f"{i}°", tag="boutons")
+            texte(x - 25, y, f"{i}°", tag="boutons", taille = 10)
         y += 12
+     
 
 def dessiner_boutons():
     rectangle(10, 10, 40, 40, remplissage="lightgray", tag="boutons")
@@ -207,55 +213,116 @@ def se_deplacer(speed=10):
     if dx != 0 or dy != 0:
         deplace("carte", dx, dy)  
 
+
+def se_deplacer(speed=10):
+    deplacee = False
+
+    if touche_pressee("Left"):
+        scale.move_x += speed
+        deplacee = True
+    if touche_pressee("Right"):
+        scale.move_x -= speed
+        deplacee = True
+    if touche_pressee("Up"):
+        scale.move_y += speed
+        deplacee = True
+    if touche_pressee("Down"):
+        scale.move_y -= speed
+        deplacee = True
+
+    return deplacee
+
+
+def zoomer():
+    ZOOM_IN = 1.1
+    ZOOM_OUT = 1 / 1.1
+    
+    zoomee = False
+
+    if touche_pressee("z"):     # Zoom +
+        scale.scale *= ZOOM_IN
+        zoomee = True
+
+    if touche_pressee("d"):     # Zoom -
+        scale.scale *= ZOOM_OUT
+        zoomee = True
+
+    return zoomee
+
+
 # Boucle principale 
 
 
     
 while True:
-    se_deplacer()
-    mise_a_jour()
-
     ev = donne_ev()
     while ev is not None:
+
         if type_ev(ev) == 'Quitte':
             ferme_fenetre()
             exit()
+
         elif type_ev(ev) == 'Touche':
             touche = touche_pressee(ev)
             if not isinstance(touche, str):
+                ev = donne_ev()
                 continue
+
             CARACTERES_AZERTY_CHIFFRES = "0123456789-&é\"'(-è_çà)="
+
             if touche == 'Return':
                 try_date = date_saisie_courante
                 if try_date in temp_dates:
                     new_index = liste_dates.index(try_date)
                     set_date(new_index)
-                    date_saisie_courante = "" 
+                    date_saisie_courante = ""
                 else:
                     print(f"Erreur : Date '{try_date}' non trouvée ou format invalide.")
-                    date_saisie_courante = "Erreur!" 
+                    date_saisie_courante = "Erreur!"
+
             elif touche == 'BackSpace':
                 date_saisie_courante = date_saisie_courante[:-1]
+
             elif touche in CARACTERES_AZERTY_CHIFFRES or touche.isdigit():
                 if touche in '&é"\'(-è_çà)=':
-                    mapping = {'&': '1', 'é': '2', '"': '3', "'": '4', '(': '5', '-': '6', 'è': '7', '_': '8', 'ç': '9', 'à': '0', '=': '-'}
-                    char_a_ajouter = mapping.get(touche, None)
-                elif touche == '-': 
-                     char_a_ajouter = '-'
-                else: 
-                    char_a_ajouter = touche
-                
-                if char_a_ajouter is not None and len(date_saisie_courante) < 10:
-                    date_saisie_courante += char_a_ajouter
+                    mapping = {'&': '1', 'é': '2', '"': '3', "'": '4', '(': '5',
+                               '-': '6', 'è': '7', '_': '8', 'ç': '9', 'à': '0', '=': '-'}
+                    char = mapping.get(touche, None)
+                elif touche == '-':
+                    char = '-'
+                else:
+                    char = touche
+
+                if char is not None and len(date_saisie_courante) < 10:
+                    date_saisie_courante += char
+
         elif type_ev(ev) == 'ClicGauche':
             x = abscisse(ev)
             y = ordonnee(ev)
+
+            # Bouton <
             if 10 <= x <= 40 and 10 <= y <= 40:
                 if index_date > 0:
                     set_date(index_date - 1)
+
+            # Bouton >
             if 60 <= x <= 90 and 10 <= y <= 40:
                 if index_date < len(liste_dates) - 1:
                     set_date(index_date + 1)
 
 
         ev = donne_ev()
+
+    # 2) Touche maintenues → déplacement & zoom
+    deplacee = se_deplacer()
+    zoomee = zoomer()
+
+    # 3) Si la carte doit être mise à jour
+    if deplacee or zoomee:
+        efface("carte")
+        dessiner_carte()
+
+    # 4) Mise à jour de l'affichage
+    mise_a_jour()
+
+ ev = donne_ev()
