@@ -142,11 +142,9 @@ def draw_shape(shape, record, numero_depart):
     scale.database[numero_depart] = (xmin_pix, ymin_pix, xmax_pix,  ymax_pix)
 
 def draw_clicked_polygone(clicked_polygone: int):
-    # clicked_polygone - indice de polygone (0, 1, 2, ...)
     shape = all_shapes[clicked_polygone]
     record = records[clicked_polygone]
     depart_code = record[0]
-
 
     if depart_code in temp_departament:
         temp = temp_departament[depart_code]
@@ -157,16 +155,16 @@ def draw_clicked_polygone(clicked_polygone: int):
     pnts = shape.points
     prts = list(shape.parts) + [len(pnts)]
 
-
     xmin, ymin, xmax, ymax = shape.bbox
     dx = xmax - xmin
     dy = ymax - ymin
 
-
     preview_w = 100
     preview_h = 100
     margin = 30
-    offset_x = scale.largeur - preview_w - margin
+
+
+    offset_x = margin
     offset_y = scale.hauteur - preview_h - margin
 
     sx = preview_w / dx
@@ -179,20 +177,20 @@ def draw_clicked_polygone(clicked_polygone: int):
     center_x = offset_x + (preview_w - draw_w) / 2
     center_y = offset_y + (preview_h - draw_h) / 2
 
-
     for i in range(len(prts) - 1):
         segment = pnts[prts[i]:prts[i + 1]]
         segment_pixels = []
         for lon, lat in segment:
             x = (lon - xmin) * s + center_x
-            # y инвертируем, чтобы север был сверху
             y = (ymax - lat) * s + center_y
             segment_pixels.append((x, y))
         polygone(segment_pixels, couleur="black", remplissage=depart_color, tag="polygone")
 
 
-    texte(450, 700, f'departament: {record[3]}', taille=12, tag="depart")
+    text_x = offset_x + preview_w + 15
+    text_y = offset_y
 
+    texte(text_x, text_y,     f"departement: {record[3]}", taille=12, tag="depart")
 
     data = main2.trie()
     data_need = None
@@ -202,11 +200,11 @@ def draw_clicked_polygone(clicked_polygone: int):
             break
 
     if data_need:
-        texte(450, 730, f'temperature moyenne: {data_need[5]}', taille=12, tag="temperature")
-        texte(450, 760, f'date: {data_need[0]}', taille=12, tag="date")
+        texte(text_x, text_y + 30, f"temperature moyenne: {data_need[5]}", taille=12, tag="temperature")
+        texte(text_x, text_y + 60, f"date: {data_need[0]}", taille=12, tag="date")
     else:
-        texte(450, 730, f'temperature moyenne: inconnue', taille=12, tag="temperature")
-        texte(450, 760, f'date: {data[0][0]}', taille=12, tag="date")
+        texte(text_x, text_y + 30, "temperature moyenne: inconnue", taille=12, tag="temperature")
+        texte(text_x, text_y + 60, f"date: {data[0][0]}", taille=12, tag="date")
 
 
 
