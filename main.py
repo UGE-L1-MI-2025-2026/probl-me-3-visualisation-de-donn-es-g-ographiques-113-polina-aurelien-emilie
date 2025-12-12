@@ -325,4 +325,4 @@ while True:
     # 4) Mise à jour de l'affichage
     mise_a_jour()
 
- ev = donne_ev()
+ev = donne_ev()
