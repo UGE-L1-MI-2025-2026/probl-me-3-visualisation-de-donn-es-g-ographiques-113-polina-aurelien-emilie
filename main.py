@@ -204,7 +204,14 @@ cree_fenetre(scale.largeur, scale.hauteur)
 set_date(0)
 dessiner_champ_saisie()
   
-
+def deplacer(speed=10):
+    dx = dy = 0
+    if touche_pressee("Left"): dx += speed
+    if touche_pressee("Right"): dx -= speed
+    if touche_pressee("Up"): dy += speed
+    if touche_pressee("Down"): dy -= speed
+    if dx != 0 or dy != 0:
+        deplace("carte", dx, dy)  
 
 def se_deplacer(speed=10):
     deplacee = False
@@ -304,7 +311,7 @@ while True:
         ev = donne_ev()
 
     # Touche maintenues → déplacement & zoom
-    deplacee = se_deplacer()
+    deplacee = deplacer()
     zoomee = zoomer()
 
     # Si la carte doit être mise à jour
