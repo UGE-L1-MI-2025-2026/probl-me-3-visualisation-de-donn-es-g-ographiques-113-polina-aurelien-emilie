@@ -52,12 +52,8 @@ class GeoScale:
         map_haut = dy * self.scale
         self.offset_x = (largeur - map_larg)/2
         self.offset_y = (hauteur - map_haut)/2
-<<<<<<< HEAD
-        
-=======
         self.database = {}
 
->>>>>>> dea9ac0 (edit)
     def from_geo_to_pix(self, lon, lat):
         X = lon
         Y = mercator_y(lat)
@@ -295,10 +291,6 @@ def set_date(i):
 cree_fenetre(scale.largeur, scale.hauteur)
 set_date(0)
 dessiner_champ_saisie()
-<<<<<<< HEAD
-  
-def deplacer(speed=10):
-=======
 
 
 for numero_depart, (shape, record) in enumerate(zip(all_shapes, records)):
@@ -311,7 +303,6 @@ current_dy = 0
 #  Déplacement 
 def se_deplacer(speed=10):
     global current_dx, current_dy
->>>>>>> dea9ac0 (edit)
     dx = dy = 0
 
     if touche_pressee("Left"):  dx += speed
@@ -375,12 +366,6 @@ while True:
             if not isinstance(touche, str):
                 ev = donne_ev()
                 continue
-<<<<<<< HEAD
-
-            CARACTERES_AZERTY_CHIFFRES = "0123456789-&é\"'(-è_çà)="
-
-=======
->>>>>>> dea9ac0 (edit)
             if touche == 'Return':
                 try_date = date_saisie_courante
                 if try_date in temp_dates:
@@ -393,27 +378,6 @@ while True:
 
             elif touche == 'BackSpace':
                 date_saisie_courante = date_saisie_courante[:-1]
-<<<<<<< HEAD
-
-            elif touche in CARACTERES_AZERTY_CHIFFRES or touche.isdigit():
-                if touche in '&é"\'(-è_çà)=':
-                    mapping = {'&': '1', 'é': '2', '"': '3', "'": '4', '(': '5',
-                               '-': '6', 'è': '7', '_': '8', 'ç': '9', 'à': '0', '=': '-'}
-                    char = mapping.get(touche, None)
-                elif touche == '-':
-                    char = '-'
-                else:
-                    char = touche
-
-                if char is not None and len(date_saisie_courante) < 10:
-                    date_saisie_courante += char
-
-        elif type_ev(ev) == 'ClicGauche':
-            x = abscisse(ev)
-            y = ordonnee(ev)
-
-            # Bouton <
-=======
             elif touche in touche.isdigit():
                 if len(date_saisie_courante) < 10:
                     date_saisie_courante += touche
@@ -447,7 +411,6 @@ while True:
                 draw_clicked_polygone(clicked_polygone)
 
 
->>>>>>> dea9ac0 (edit)
             if 10 <= x <= 40 and 10 <= y <= 40:
                 if index_date > 0:
                     set_date(index_date - 1)
