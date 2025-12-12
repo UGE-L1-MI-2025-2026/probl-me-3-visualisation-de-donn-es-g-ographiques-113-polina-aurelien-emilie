@@ -52,7 +52,12 @@ class GeoScale:
         map_haut = dy * self.scale
         self.offset_x = (largeur - map_larg)/2
         self.offset_y = (hauteur - map_haut)/2
+<<<<<<< HEAD
         
+=======
+        self.database = {}
+
+>>>>>>> dea9ac0 (edit)
     def from_geo_to_pix(self, lon, lat):
         X = lon
         Y = mercator_y(lat)
@@ -132,8 +137,9 @@ temp_departament = temp_dates[liste_dates[index_date]]
 
 
 #  Dessin 
-def draw_shape(shape, record):
+def draw_shape(shape, record, numero_depart):
     depart_code = record[0]
+
     if depart_code in temp_departament:
         depart_color = temp_to_color(temp_departament[depart_code], tmin, tmax)
     else:
@@ -141,14 +147,104 @@ def draw_shape(shape, record):
 
     pnts = shape.points
     prts = list(shape.parts) + [len(pnts)]
+
+    polygone_pixels = []
+
     for i in range(len(prts)-1):
         segment = pnts[prts[i]:prts[i+1]]
         segment_pixels = [scale.from_geo_to_pix(lon, lat) for lon, lat in segment]
-        polygone(segment_pixels, couleur="black", remplissage=depart_color, tag="carte") 
 
-def dessiner_carte():
+        polygone_pixels.extend(segment_pixels)
+
+        polygone(segment_pixels, couleur="black", remplissage=depart_color, tag="carte")
+
+    if not polygone_pixels:
+        return
+
+    xmin_pix = min(p[0] for p in polygone_pixels)
+    xmax_pix = max(p[0] for p in polygone_pixels)
+    ymin_pix = min(p[1] for p in polygone_pixels)
+    ymax_pix = max(p[1] for p in polygone_pixels)
+
+    scale.database[numero_depart] = (xmin_pix, ymin_pix, xmax_pix, ymax_pix)
+
+
+def draw_clicked_polygone(clicked_polygone: int):
+    # clicked_polygone - indice de polygone (0, 1, 2, ...)
+    shape = all_shapes[clicked_polygone]
+    record = records[clicked_polygone]
+    depart_code = record[0]
+
+
+    if depart_code in temp_departament:
+        temp = temp_departament[depart_code]
+        depart_color = temp_to_color(temp, tmin, tmax)
+    else:
+        depart_color = None
+
+    pnts = shape.points
+    prts = list(shape.parts) + [len(pnts)]
+
+
+    xmin, ymin, xmax, ymax = shape.bbox
+    dx = xmax - xmin
+    dy = ymax - ymin
+
+
+    preview_w = 100
+    preview_h = 100
+    margin = 30
+    offset_x = scale.largeur - preview_w - margin
+    offset_y = scale.hauteur - preview_h - margin
+
+    sx = preview_w / dx
+    sy = preview_h / dy
+    s = min(sx, sy)
+
+    draw_w = dx * s
+    draw_h = dy * s
+
+    center_x = offset_x + (preview_w - draw_w) / 2
+    center_y = offset_y + (preview_h - draw_h) / 2
+
+
+    for i in range(len(prts) - 1):
+        segment = pnts[prts[i]:prts[i + 1]]
+        segment_pixels = []
+        for lon, lat in segment:
+            x = (lon - xmin) * s + center_x
+            # y инвертируем, чтобы север был сверху
+            y = (ymax - lat) * s + center_y
+            segment_pixels.append((x, y))
+        polygone(segment_pixels, couleur="black", remplissage=depart_color, tag="polygone")
+
+
+    texte(450, 700, f'departament: {record[3]}', taille=12, tag="depart")
+
+
+
+    data = main2.trie()
+    data_need = None
+    for row in data:
+        if row[1] == depart_code:
+            data_need = row
+            break
+
+    if data_need:
+        texte(450, 730, f'temperature moyenne: {data_need[5]}', taille=12, tag="temperature")
+        texte(450, 760, f'date: {data_need[0]}', taille=12, tag="date")
+    else:
+        texte(450, 730, f'temperature moyenne: inconnue', taille=12, tag="temperature")
+        texte(450, 760, f'date: {data[0][0]}', taille=12, tag="date")
+
+
+
+
+
+
+"""def dessiner_carte():
     for shape, record in zip(all_shapes, records):
-        draw_shape(shape, record)
+        draw_shape(shape, record, numero_depart)"""
 
 def dessiner_legende():
     x, y = 770, 0
@@ -192,7 +288,6 @@ def set_date(i):
     index_date = i
     temp_departament = temp_dates[liste_dates[index_date]]
     efface("carte")
-    dessiner_carte()
     efface("boutons")  
     dessiner_legende()
     dessiner_boutons()
@@ -200,15 +295,34 @@ def set_date(i):
 cree_fenetre(scale.largeur, scale.hauteur)
 set_date(0)
 dessiner_champ_saisie()
+<<<<<<< HEAD
   
 def deplacer(speed=10):
+=======
+
+
+for numero_depart, (shape, record) in enumerate(zip(all_shapes, records)):
+    draw_shape(shape, record, numero_depart)
+
+
+current_dx = 0 #pour bouger la carte avec deplace()
+current_dy = 0
+
+#  Déplacement 
+def se_deplacer(speed=10):
+    global current_dx, current_dy
+>>>>>>> dea9ac0 (edit)
     dx = dy = 0
-    if touche_pressee("Left"): dx += speed
+
+    if touche_pressee("Left"):  dx += speed
     if touche_pressee("Right"): dx -= speed
-    if touche_pressee("Up"): dy += speed
-    if touche_pressee("Down"): dy -= speed
+    if touche_pressee("Up"):    dy += speed
+    if touche_pressee("Down"):  dy -= speed
+
     if dx != 0 or dy != 0:
-        deplace("carte", dx, dy)  
+        current_dx += dx
+        current_dy += dy
+        deplace("carte", dx, dy)
 
 def se_deplacer(speed=10):
     deplacee = False
@@ -257,13 +371,16 @@ while True:
             exit()
 
         elif type_ev(ev) == 'Touche':
-            touche = touche_pressee(ev)
+            touche = touche(ev)
             if not isinstance(touche, str):
                 ev = donne_ev()
                 continue
+<<<<<<< HEAD
 
             CARACTERES_AZERTY_CHIFFRES = "0123456789-&é\"'(-è_çà)="
 
+=======
+>>>>>>> dea9ac0 (edit)
             if touche == 'Return':
                 try_date = date_saisie_courante
                 if try_date in temp_dates:
@@ -276,6 +393,7 @@ while True:
 
             elif touche == 'BackSpace':
                 date_saisie_courante = date_saisie_courante[:-1]
+<<<<<<< HEAD
 
             elif touche in CARACTERES_AZERTY_CHIFFRES or touche.isdigit():
                 if touche in '&é"\'(-è_çà)=':
@@ -295,6 +413,41 @@ while True:
             y = ordonnee(ev)
 
             # Bouton <
+=======
+            elif touche in touche.isdigit():
+                if len(date_saisie_courante) < 10:
+                    date_saisie_courante += touche
+                else: 
+                    char_a_ajouter = touche
+                
+                if char_a_ajouter is not None and len(date_saisie_courante) < 10:
+                    date_saisie_courante += char_a_ajouter
+        elif type_ev(ev) == 'ClicGauche':
+            x = abscisse(ev)
+            y = ordonnee(ev)
+            x_screen = abscisse(ev)
+            y_screen = ordonnee(ev)
+            x2 = x_screen - current_dx
+            y2 = y_screen - current_dy
+            clicked_polygone = None
+
+            for numero_depart, (xmin_pix, ymin_pix, xmax_pix, ymax_pix) in scale.database.items():
+                if xmin_pix <= x2 <= xmax_pix and ymin_pix <= y2 <= ymax_pix:
+                    clicked_polygone = numero_depart
+                    break
+
+
+            if clicked_polygone is not None:
+                efface("polygone")
+                efface("temperature")
+                efface("depart")
+                efface("date")
+
+                print(f'vous avez clique sur Polygone {clicked_polygone}')
+                draw_clicked_polygone(clicked_polygone)
+
+
+>>>>>>> dea9ac0 (edit)
             if 10 <= x <= 40 and 10 <= y <= 40:
                 if index_date > 0:
                     set_date(index_date - 1)
@@ -303,6 +456,7 @@ while True:
             if 60 <= x <= 90 and 10 <= y <= 40:
                 if index_date < len(liste_dates) - 1:
                     set_date(index_date + 1)
+            
 
 
         ev = donne_ev()
