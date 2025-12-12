@@ -203,15 +203,7 @@ def set_date(i):
 cree_fenetre(scale.largeur, scale.hauteur)
 set_date(0)
 dessiner_champ_saisie()
-#  Déplacement 
-def se_deplacer(speed=10):
-    dx = dy = 0
-    if touche_pressee("Left"): dx += speed
-    if touche_pressee("Right"): dx -= speed
-    if touche_pressee("Up"): dy += speed
-    if touche_pressee("Down"): dy -= speed
-    if dx != 0 or dy != 0:
-        deplace("carte", dx, dy)  
+  
 
 
 def se_deplacer(speed=10):
@@ -239,18 +231,16 @@ def zoomer():
     
     zoomee = False
 
-    if touche_pressee("z"):     # Zoom +
+    if touche_pressee("z"):     
         scale.scale *= ZOOM_IN
         zoomee = True
 
-    if touche_pressee("d"):     # Zoom -
+    if touche_pressee("d"):     
         scale.scale *= ZOOM_OUT
         zoomee = True
 
     return zoomee
 
-
-# Boucle principale 
 
 
     
