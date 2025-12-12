@@ -52,9 +52,6 @@ class GeoScale:
         map_haut = dy * self.scale
         self.offset_x = (largeur - map_larg)/2
         self.offset_y = (hauteur - map_haut)/2
-
-        self.move_x = 0
-        self.move_y = 0
         
     def from_geo_to_pix(self, lon, lat):
         X = lon
