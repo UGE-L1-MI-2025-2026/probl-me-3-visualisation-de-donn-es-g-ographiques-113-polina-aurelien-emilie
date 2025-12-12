@@ -313,16 +313,16 @@ while True:
 
         ev = donne_ev()
 
-    # 2) Touche maintenues → déplacement & zoom
+    # Touche maintenues → déplacement & zoom
     deplacee = se_deplacer()
     zoomee = zoomer()
 
-    # 3) Si la carte doit être mise à jour
+    # Si la carte doit être mise à jour
     if deplacee or zoomee:
         efface("carte")
         dessiner_carte()
 
-    # 4) Mise à jour de l'affichage
+
     mise_a_jour()
 
 ev = donne_ev()
